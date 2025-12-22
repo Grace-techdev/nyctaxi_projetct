@@ -32,3 +32,10 @@ spark.read.table("nyctaxi.`03_gold`.daily_trip_summary").\
 # COMMAND ----------
 
 spark.read.table("nyctaxi.`02_silver`.taxi_zone_lookup").display()
+
+# COMMAND ----------
+
+spark.read.table("nyctaxi.`04_export`.yellow_trips_export").\
+    groupBy("year_month").\
+    agg(count("*").alias("total_records")).\
+    orderBy("year_month").display()
