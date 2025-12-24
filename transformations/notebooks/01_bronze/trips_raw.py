@@ -7,11 +7,14 @@ project_root = os.path.abspath(os.path.join(os.getcwd(), "../.."))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from pyspark.sql.functions import current_timestamp
-from dateutil.relativedelta import relativedelta
-from datetime import date
 from modules.utils.date_utils import get_target_yyyymm
 from modules.transformations.metadata import add_processed_timestamp
+from pyspark.sql.functions import lit
+
+# COMMAND ----------
+
+dbutils.widgets.text("taxi_type", "green")
+taxi_type = dbutils.widgets.get("taxi_type")
 
 # COMMAND ----------
 
@@ -19,8 +22,8 @@ from modules.transformations.metadata import add_processed_timestamp
 formatted_date = get_target_yyyymm(2)
 
 # Read all Parquet files for the specified month from the landing directory into a DataFrame
-df = spark.read.format("parquet").load(
-    f"/Volumes/nyctaxi/00_landing/data_sources/nyctaxi_yellow/{formatted_date}")
+landing_path = f"/Volumes/nyctaxi/00_landing/data_sources/nyctaxi_{taxi_type}/{formatted_date}"
+df = spark.read.format("parquet").load(landing_path)
 
 # COMMAND ----------
 
@@ -30,4 +33,4 @@ df = add_processed_timestamp(df)
 # COMMAND ----------
 
 # Write the DataFrame to a Unity Catalog managed Delta table in the bronze schema, appending the new data
-df.write.mode("append").saveAsTable("nyctaxi.01_bronze.yellow_trips_raw")
+df.write.mode("append").saveAsTable(f"nyctaxi.01_bronze.{taxi_type}_trips_raw")
