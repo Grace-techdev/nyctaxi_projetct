@@ -7,22 +7,25 @@ project_root = os.path.abspath(os.path.join(os.getcwd(), "../.."))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-import urllib.request
-import shutil
-from datetime import datetime
-from datetime import date, datetime, timezone
-from dateutil.relativedelta import relativedelta
 from modules.utils.date_utils import get_target_yyyymm
 from modules.data_loader.file_downloader import download_file
+
+# COMMAND ----------
+
+dbutils.widgets.text("taxi_type", "green")
+taxi_type = dbutils.widgets.get("taxi_type")
+
+# COMMAND ----------
 
 # Obtains the year-month for 2 months prior to the current month in yyyy-MM format
 formatted_date = get_target_yyyymm(2)
 
 # Define the local directory for this date's data
-dir_path = f"/Volumes/nyctaxi/00_landing/data_sources/nyctaxi_yellow/{formatted_date}"
+dir_path = f"/Volumes/nyctaxi/00_landing/data_sources/nyctaxi_{taxi_type}/{formatted_date}"
 
 # Define the full path for the downloaded file
-local_path = f"{dir_path}/yellow_tripdata_{formatted_date}.parquet"
+file_name = f"{taxi_type}_tripdata_{formatted_date}.parquet"
+local_path = f"{dir_path}/{file_name}"
 
 try:
     # Check if the file already exists
@@ -34,7 +37,7 @@ try:
 except:
     try:
         # Construct the URL for the Parquet file corresponding to this month
-        url = f"https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_{formatted_date}.parquet"
+        url = f"https://d37ci6vzurychx.cloudfront.net/trip-data/{file_name}"
 
         # Download the file
         # Create the local directory for this date's data
